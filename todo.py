@@ -30,7 +30,7 @@ def load_tasks(path=None):
     if not os.path.exists(path):
         return []
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         # valid JSON in the wrong shape (someone edited it by hand, for example) also counts as corrupted
         if not isinstance(data, list) or not all(isinstance(t, dict) and "name" in t for t in data):
