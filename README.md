@@ -29,6 +29,8 @@ python todo.py --help
 
 When something goes wrong (a task number that doesn't exist, for example) the command prints the error and exits with code 1, so it also works in scripts.
 
+![Adding three tasks, finishing one and listing them with the direct commands](docs/screenshot-commands.png)
+
 ## What it looks like
 
 ![The task list in the terminal](docs/screenshot.png)
