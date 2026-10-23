@@ -179,6 +179,13 @@ class TestCli(unittest.TestCase):
         self.assertIn("Urgent", text)
         self.assertNotIn("Whenever", text)
 
+    def test_find(self):
+        self.run_cli("add", "Buy bread")
+        self.run_cli("add", "Study SQL")
+        self.run_cli("add", "buy milk")
+        self.assertEqual(self.run_cli("find", "BUY"), (0, "1. [ ] Buy bread\n3. [ ] buy milk\n"))
+        self.assertEqual(self.run_cli("find", "python"), (0, "Nothing found.\n"))
+
 
 if __name__ == "__main__":
     unittest.main()

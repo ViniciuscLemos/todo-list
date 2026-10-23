@@ -126,6 +126,12 @@ def clear_done(tasks):
     return before - len(tasks)
 
 
+def find(tasks, text):
+    """Returns (number, task) for the tasks whose name has the text, ignoring case."""
+    text = text.strip().lower()
+    return [(i, t) for i, t in enumerate(tasks, 1) if text in t["name"].lower()]
+
+
 def summary(tasks):
     done = sum(1 for t in tasks if t["done"])
     return {"total": len(tasks), "done": done, "pending": len(tasks) - done}
@@ -276,12 +282,22 @@ def cli(argv, path=None):
 
     commands.add_parser("clear", help="remove the done tasks")
 
+    search = commands.add_parser("find", help="search tasks by name")
+    search.add_argument("text", nargs="+")
+
     args = parser.parse_args(argv)
     tasks = load_tasks(path)
 
     try:
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority)
+            return 0
+        if args.command == "find":
+            found = find(tasks, " ".join(args.text))
+            for i, task in found:
+                print(f"{i}. {'[x]' if task['done'] else '[ ]'} {task['name']}")
+            if not found:
+                print("Nothing found.")
             return 0
         if args.command == "add":
             task = create_task(tasks, " ".join(args.name), args.priority)
