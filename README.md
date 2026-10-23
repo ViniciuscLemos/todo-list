@@ -27,6 +27,7 @@ python todo.py done 1
 python todo.py edit 1 -n "Study SQL and Python" -p m
 python todo.py find sql
 python todo.py stats
+python todo.py list --json   # raw tasks, for scripts
 python todo.py rm 2
 python todo.py clear          # removes the done ones
 python todo.py --help

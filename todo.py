@@ -284,6 +284,7 @@ def cli(argv, path=None):
     show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
                       help="only this priority")
     show.add_argument("-s", "--sort", action="store_true", help="high priority first")
+    show.add_argument("--json", action="store_true", help="print the raw tasks, to use in scripts")
 
     add = commands.add_parser("add", help="add a task")
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
@@ -313,6 +314,9 @@ def cli(argv, path=None):
     tasks = load_tasks(path)
 
     try:
+        if args.command == "list" and args.json:
+            print(json.dumps(tasks, ensure_ascii=False, indent=2))
+            return 0
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority,
                        by_priority=args.sort)

@@ -203,6 +203,12 @@ class TestCli(unittest.TestCase):
         self.assertEqual(self.run_cli("done", "2", "9")[0], 1)
         self.assertFalse(todo.load_tasks(self.path)[1]["done"])
 
+    def test_list_json(self):
+        self.run_cli("add", "Café", "-p", "h")
+        code, text = self.run_cli("list", "--json")
+        data = json.loads(text)
+        self.assertEqual((data[0]["name"], data[0]["priority"]), ("Café", "high"))
+
     def test_stats(self):
         self.assertEqual(self.run_cli("stats"), (0, "0/0 done, 0 pending\n"))
         self.run_cli("add", "A")
