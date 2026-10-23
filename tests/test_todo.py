@@ -172,6 +172,13 @@ class TestCli(unittest.TestCase):
         self.assertEqual(self.run_cli("clear"), (0, "1 done task(s) removed.\n"))
         self.assertEqual([t["name"] for t in todo.load_tasks(self.path)], ["A"])
 
+    def test_list_by_priority(self):
+        self.run_cli("add", "Urgent", "-p", "h")
+        self.run_cli("add", "Whenever", "-p", "l")
+        code, text = self.run_cli("list", "-p", "high")
+        self.assertIn("Urgent", text)
+        self.assertNotIn("Whenever", text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -132,9 +132,10 @@ def summary(tasks):
 
 
 
-def list_tasks(tasks, pending_only=False):
+def list_tasks(tasks, pending_only=False, priority=None):
     visible = [(i, t) for i, t in enumerate(tasks, 1)
-               if not (pending_only and t["done"])]
+               if not (pending_only and t["done"])
+               and (priority is None or t["priority"] == priority)]
     if not visible:
         print("\n  No tasks to show.\n")
         return
@@ -261,6 +262,8 @@ def cli(argv, path=None):
 
     show = commands.add_parser("list", help="show the tasks")
     show.add_argument("--pending", action="store_true", help="only the ones not done")
+    show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
+                      help="only this priority")
 
     add = commands.add_parser("add", help="add a task")
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
@@ -278,7 +281,7 @@ def cli(argv, path=None):
 
     try:
         if args.command == "list":
-            list_tasks(tasks, pending_only=args.pending)
+            list_tasks(tasks, pending_only=args.pending, priority=args.priority)
             return 0
         if args.command == "add":
             task = create_task(tasks, " ".join(args.name), args.priority)
