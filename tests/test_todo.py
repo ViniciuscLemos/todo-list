@@ -36,6 +36,11 @@ class TestRules(unittest.TestCase):
         with self.assertRaises(ValueError):
             todo.create_task(self.tasks, "x", "urgent")
 
+    def test_find_rejects_blank_text(self):
+        todo.create_task(self.tasks, "A")
+        with self.assertRaises(ValueError):
+            todo.find(self.tasks, "   ")
+
     def test_complete_and_reopen(self):
         todo.create_task(self.tasks, "A")
         todo.complete(self.tasks, 1)

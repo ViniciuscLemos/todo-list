@@ -129,6 +129,8 @@ def clear_done(tasks):
 def find(tasks, text):
     """Returns (number, task) for the tasks whose name has the text, ignoring case."""
     text = text.strip().lower()
+    if not text:
+        raise ValueError("Type something to search for.")
     return [(i, t) for i, t in enumerate(tasks, 1) if text in t["name"].lower()]
 
 
@@ -254,7 +256,9 @@ def run_option(option, tasks):
         save_tasks(tasks)
         print(f"  🧹 {count} done task(s) removed.\n")
     elif option == "9":
-        found = find(tasks, input("  Search for: "))
+        found = run(find, tasks, input("  Search for: "))
+        if found is None:
+            return True
         for i, task in found:
             print(f"  {i}. {'✅' if task['done'] else '⬜'} {task['name']}")
         print(f"  {len(found)} task(s) found.\n")
