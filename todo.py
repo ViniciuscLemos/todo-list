@@ -290,7 +290,10 @@ def cli(argv, path=None):
     add.add_argument("-p", "--priority", default="medium", type=normalize_priority,
                      help="low, medium or high (or l/m/h)")
 
-    for name, text in (("done", "mark as done"), ("reopen", "mark as pending again"), ("rm", "remove")):
+    finish = commands.add_parser("done", help="mark as done (one or more numbers)")
+    finish.add_argument("numbers", type=int, nargs="+")
+
+    for name, text in (("reopen", "mark as pending again"), ("rm", "remove")):
         command = commands.add_parser(name, help=text)
         command.add_argument("number", type=int, help="the task number shown by list")
 
@@ -329,7 +332,9 @@ def cli(argv, path=None):
             task = create_task(tasks, " ".join(args.name), args.priority)
             message = f"Added: {task['name']}"
         elif args.command == "done":
-            message = f"Done: {complete(tasks, args.number)['name']}"
+            # if one number is wrong nothing gets saved, so it's all or nothing
+            names = [complete(tasks, n)["name"] for n in args.numbers]
+            message = "\n".join(f"Done: {name}" for name in names)
         elif args.command == "reopen":
             message = f"Pending again: {reopen(tasks, args.number)['name']}"
         elif args.command == "edit":

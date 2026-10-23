@@ -196,6 +196,13 @@ class TestCli(unittest.TestCase):
         code, text = self.run_cli("list", "--sort")
         self.assertLess(text.index("2. "), text.index("1. "))
 
+    def test_done_several(self):
+        for name in ("A", "B", "C"):
+            self.run_cli("add", name)
+        self.assertEqual(self.run_cli("done", "1", "3"), (0, "Done: A\nDone: C\n"))
+        self.assertEqual(self.run_cli("done", "2", "9")[0], 1)
+        self.assertFalse(todo.load_tasks(self.path)[1]["done"])
+
     def test_stats(self):
         self.assertEqual(self.run_cli("stats"), (0, "0/0 done, 0 pending\n"))
         self.run_cli("add", "A")
