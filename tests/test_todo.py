@@ -185,6 +185,13 @@ class TestCli(unittest.TestCase):
         self.assertEqual(todo.load_tasks(self.path)[0]["priority"], "high")
         self.assertEqual(self.run_cli("edit", "1")[0], 1)
 
+    def test_stats(self):
+        self.assertEqual(self.run_cli("stats"), (0, "0/0 done, 0 pending\n"))
+        self.run_cli("add", "A")
+        self.run_cli("add", "B")
+        self.run_cli("done", "1")
+        self.assertEqual(self.run_cli("stats"), (0, "1/2 done, 1 pending\n"))
+
     def test_find(self):
         self.run_cli("add", "Buy bread")
         self.run_cli("add", "Study SQL")

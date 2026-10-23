@@ -290,6 +290,8 @@ def cli(argv, path=None):
     search = commands.add_parser("find", help="search tasks by name")
     search.add_argument("text", nargs="+")
 
+    commands.add_parser("stats", help="how many are done and pending")
+
     args = parser.parse_args(argv)
     tasks = load_tasks(path)
 
@@ -303,6 +305,10 @@ def cli(argv, path=None):
                 print(f"{i}. {'[x]' if task['done'] else '[ ]'} {task['name']}")
             if not found:
                 print("Nothing found.")
+            return 0
+        if args.command == "stats":
+            s = summary(tasks)
+            print(f"{s['done']}/{s['total']} done, {s['pending']} pending")
             return 0
         if args.command == "add":
             task = create_task(tasks, " ".join(args.name), args.priority)
