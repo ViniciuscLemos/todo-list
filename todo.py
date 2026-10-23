@@ -203,6 +203,7 @@ def menu():
     print("  6. Edit task")
     print("  7. Remove task")
     print("  8. Clear done tasks")
+    print("  9. Search tasks")
     print("  0. Quit")
     print("  ================================")
     return input("  Choose an option: ").strip()
@@ -252,6 +253,11 @@ def run_option(option, tasks):
         count = clear_done(tasks)
         save_tasks(tasks)
         print(f"  🧹 {count} done task(s) removed.\n")
+    elif option == "9":
+        found = find(tasks, input("  Search for: "))
+        for i, task in found:
+            print(f"  {i}. {'✅' if task['done'] else '⬜'} {task['name']}")
+        print(f"  {len(found)} task(s) found.\n")
     elif option == "0":
         print("\n  See you! 👋\n")
         return False
