@@ -185,6 +185,12 @@ class TestCli(unittest.TestCase):
         self.assertEqual(todo.load_tasks(self.path)[0]["priority"], "high")
         self.assertEqual(self.run_cli("edit", "1")[0], 1)
 
+    def test_list_sorted_keeps_numbers(self):
+        self.run_cli("add", "Later", "-p", "l")
+        self.run_cli("add", "Now", "-p", "h")
+        code, text = self.run_cli("list", "--sort")
+        self.assertLess(text.index("2. "), text.index("1. "))
+
     def test_stats(self):
         self.assertEqual(self.run_cli("stats"), (0, "0/0 done, 0 pending\n"))
         self.run_cli("add", "A")

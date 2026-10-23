@@ -138,10 +138,13 @@ def summary(tasks):
 
 
 
-def list_tasks(tasks, pending_only=False, priority=None):
+def list_tasks(tasks, pending_only=False, priority=None, by_priority=False):
     visible = [(i, t) for i, t in enumerate(tasks, 1)
                if not (pending_only and t["done"])
                and (priority is None or t["priority"] == priority)]
+    if by_priority:
+        # high first; the numbers stay the same so done/rm still work with them
+        visible.sort(key=lambda item: -PRIORITIES.index(item[1]["priority"]))
     if not visible:
         print("\n  No tasks to show.\n")
         return
@@ -270,6 +273,7 @@ def cli(argv, path=None):
     show.add_argument("--pending", action="store_true", help="only the ones not done")
     show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
                       help="only this priority")
+    show.add_argument("-s", "--sort", action="store_true", help="high priority first")
 
     add = commands.add_parser("add", help="add a task")
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
@@ -297,7 +301,8 @@ def cli(argv, path=None):
 
     try:
         if args.command == "list":
-            list_tasks(tasks, pending_only=args.pending, priority=args.priority)
+            list_tasks(tasks, pending_only=args.pending, priority=args.priority,
+                       by_priority=args.sort)
             return 0
         if args.command == "find":
             found = find(tasks, " ".join(args.text))
