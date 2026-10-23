@@ -282,6 +282,11 @@ def cli(argv, path=None):
 
     commands.add_parser("clear", help="remove the done tasks")
 
+    change = commands.add_parser("edit", help="rename a task or change its priority")
+    change.add_argument("number", type=int)
+    change.add_argument("-n", "--name")
+    change.add_argument("-p", "--priority", type=normalize_priority)
+
     search = commands.add_parser("find", help="search tasks by name")
     search.add_argument("text", nargs="+")
 
@@ -306,6 +311,10 @@ def cli(argv, path=None):
             message = f"Done: {complete(tasks, args.number)['name']}"
         elif args.command == "reopen":
             message = f"Pending again: {reopen(tasks, args.number)['name']}"
+        elif args.command == "edit":
+            if args.name is None and args.priority is None:
+                raise ValueError("Nothing to change, use --name or --priority.")
+            message = f"Updated: {edit(tasks, args.number, args.name, args.priority)['name']}"
         elif args.command == "rm":
             message = f"Removed: {remove(tasks, args.number)['name']}"
         else:

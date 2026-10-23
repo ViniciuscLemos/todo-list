@@ -179,6 +179,12 @@ class TestCli(unittest.TestCase):
         self.assertIn("Urgent", text)
         self.assertNotIn("Whenever", text)
 
+    def test_edit(self):
+        self.run_cli("add", "Buy bred")
+        self.assertEqual(self.run_cli("edit", "1", "-n", "Buy bread", "-p", "h"), (0, "Updated: Buy bread\n"))
+        self.assertEqual(todo.load_tasks(self.path)[0]["priority"], "high")
+        self.assertEqual(self.run_cli("edit", "1")[0], 1)
+
     def test_find(self):
         self.run_cli("add", "Buy bread")
         self.run_cli("add", "Study SQL")
