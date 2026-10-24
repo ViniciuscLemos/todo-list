@@ -214,6 +214,7 @@ class TestCli(unittest.TestCase):
         self.run_cli("add", "Not yet")
         self.run_cli("done", "1")
         code, text = self.run_cli("list", "--done")
+        self.assertIn("Done tasks", text)
         self.assertIn("Finished", text)
         self.assertNotIn("Not yet", text)
 

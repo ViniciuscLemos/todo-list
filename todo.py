@@ -151,7 +151,9 @@ def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done
     if not visible:
         print("\n  No tasks to show.\n")
         return
-    title = "📋 Pending tasks:" if pending_only else "📋 Your tasks:"
+    title = ("📋 Pending tasks:" if pending_only
+             else "📋 Done tasks:" if done_only
+             else "📋 Your tasks:")
     print(f"\n  {title}")
     print("  " + "-" * 45)
     for i, task in visible:
