@@ -297,8 +297,8 @@ def cli(argv, path=None):
     back = commands.add_parser("reopen", help="mark as pending again (one or more numbers)")
     back.add_argument("numbers", type=int, nargs="+")
 
-    delete = commands.add_parser("rm", help="remove")
-    delete.add_argument("number", type=int, help="the task number shown by list")
+    delete = commands.add_parser("rm", help="remove (one or more numbers)")
+    delete.add_argument("numbers", type=int, nargs="+", help="the task numbers shown by list")
 
     commands.add_parser("clear", help="remove the done tasks")
 
@@ -349,7 +349,11 @@ def cli(argv, path=None):
                 raise ValueError("Nothing to change, use --name or --priority.")
             message = f"Updated: {edit(tasks, args.number, args.name, args.priority)['name']}"
         elif args.command == "rm":
-            message = f"Removed: {remove(tasks, args.number)['name']}"
+            for n in args.numbers:
+                get_task(tasks, n)
+            # from the biggest number down, so removing one doesn't shift the others
+            removed = [remove(tasks, n)["name"] for n in sorted(set(args.numbers), reverse=True)]
+            message = "\n".join(f"Removed: {name}" for name in reversed(removed))
         else:
             message = f"{clear_done(tasks)} done task(s) removed."
     except (ValueError, IndexError) as error:

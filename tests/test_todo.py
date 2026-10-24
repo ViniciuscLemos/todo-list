@@ -209,6 +209,12 @@ class TestCli(unittest.TestCase):
         data = json.loads(text)
         self.assertEqual((data[0]["name"], data[0]["priority"]), ("Café", "high"))
 
+    def test_rm_several(self):
+        for name in ("A", "B", "C", "D"):
+            self.run_cli("add", name)
+        self.assertEqual(self.run_cli("rm", "1", "3"), (0, "Removed: A\nRemoved: C\n"))
+        self.assertEqual([t["name"] for t in todo.load_tasks(self.path)], ["B", "D"])
+
     def test_reopen_several(self):
         for name in ("A", "B"):
             self.run_cli("add", name)
