@@ -21,9 +21,10 @@ There are also direct commands, for when you don't want to open the menu:
 ```bash
 python todo.py add Study SQL for the exam -p high
 python todo.py list --pending
+python todo.py list --done
 python todo.py list -p high   # only one priority
 python todo.py list --sort    # high first, numbers don't change
-python todo.py done 1
+python todo.py done 1 3       # done, reopen and rm take more than one number
 python todo.py edit 1 -n "Study SQL and Python" -p m
 python todo.py find sql
 python todo.py stats
