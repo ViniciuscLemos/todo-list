@@ -294,9 +294,11 @@ def cli(argv, path=None):
     finish = commands.add_parser("done", help="mark as done (one or more numbers)")
     finish.add_argument("numbers", type=int, nargs="+")
 
-    for name, text in (("reopen", "mark as pending again"), ("rm", "remove")):
-        command = commands.add_parser(name, help=text)
-        command.add_argument("number", type=int, help="the task number shown by list")
+    back = commands.add_parser("reopen", help="mark as pending again (one or more numbers)")
+    back.add_argument("numbers", type=int, nargs="+")
+
+    delete = commands.add_parser("rm", help="remove")
+    delete.add_argument("number", type=int, help="the task number shown by list")
 
     commands.add_parser("clear", help="remove the done tasks")
 
@@ -340,7 +342,8 @@ def cli(argv, path=None):
             names = [complete(tasks, n)["name"] for n in args.numbers]
             message = "\n".join(f"Done: {name}" for name in names)
         elif args.command == "reopen":
-            message = f"Pending again: {reopen(tasks, args.number)['name']}"
+            names = [reopen(tasks, n)["name"] for n in args.numbers]
+            message = "\n".join(f"Pending again: {name}" for name in names)
         elif args.command == "edit":
             if args.name is None and args.priority is None:
                 raise ValueError("Nothing to change, use --name or --priority.")

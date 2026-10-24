@@ -209,6 +209,12 @@ class TestCli(unittest.TestCase):
         data = json.loads(text)
         self.assertEqual((data[0]["name"], data[0]["priority"]), ("Café", "high"))
 
+    def test_reopen_several(self):
+        for name in ("A", "B"):
+            self.run_cli("add", name)
+        self.run_cli("done", "1", "2")
+        self.assertEqual(self.run_cli("reopen", "2", "1"), (0, "Pending again: B\nPending again: A\n"))
+
     def test_stats(self):
         self.assertEqual(self.run_cli("stats"), (0, "0/0 done, 0 pending\n"))
         self.run_cli("add", "A")
