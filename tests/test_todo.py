@@ -209,6 +209,10 @@ class TestCli(unittest.TestCase):
         data = json.loads(text)
         self.assertEqual((data[0]["name"], data[0]["priority"]), ("Café", "high"))
 
+    def test_clear_with_nothing_done(self):
+        self.run_cli("add", "A")
+        self.assertEqual(self.run_cli("clear"), (0, "Nothing to clear, no task is done.\n"))
+
     def test_list_done(self):
         self.run_cli("add", "Finished")
         self.run_cli("add", "Not yet")

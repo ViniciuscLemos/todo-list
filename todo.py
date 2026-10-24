@@ -360,7 +360,11 @@ def cli(argv, path=None):
             removed = [remove(tasks, n)["name"] for n in sorted(set(args.numbers), reverse=True)]
             message = "\n".join(f"Removed: {name}" for name in reversed(removed))
         else:
-            message = f"{clear_done(tasks)} done task(s) removed."
+            count = clear_done(tasks)
+            if not count:
+                print("Nothing to clear, no task is done.")
+                return 0
+            message = f"{count} done task(s) removed."
     except (ValueError, IndexError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
