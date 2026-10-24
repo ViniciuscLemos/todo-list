@@ -209,6 +209,14 @@ class TestCli(unittest.TestCase):
         data = json.loads(text)
         self.assertEqual((data[0]["name"], data[0]["priority"]), ("Café", "high"))
 
+    def test_list_done(self):
+        self.run_cli("add", "Finished")
+        self.run_cli("add", "Not yet")
+        self.run_cli("done", "1")
+        code, text = self.run_cli("list", "--done")
+        self.assertIn("Finished", text)
+        self.assertNotIn("Not yet", text)
+
     def test_rm_several(self):
         for name in ("A", "B", "C", "D"):
             self.run_cli("add", name)

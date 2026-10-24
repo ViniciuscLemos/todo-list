@@ -140,9 +140,10 @@ def summary(tasks):
 
 
 
-def list_tasks(tasks, pending_only=False, priority=None, by_priority=False):
+def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done_only=False):
     visible = [(i, t) for i, t in enumerate(tasks, 1)
                if not (pending_only and t["done"])
+               and not (done_only and not t["done"])
                and (priority is None or t["priority"] == priority)]
     if by_priority:
         # high first; the numbers stay the same so done/rm still work with them
@@ -280,7 +281,9 @@ def cli(argv, path=None):
     commands = parser.add_subparsers(dest="command", required=True)
 
     show = commands.add_parser("list", help="show the tasks")
-    show.add_argument("--pending", action="store_true", help="only the ones not done")
+    which = show.add_mutually_exclusive_group()
+    which.add_argument("--pending", action="store_true", help="only the ones not done")
+    which.add_argument("--done", action="store_true", help="only the ones already done")
     show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
                       help="only this priority")
     show.add_argument("-s", "--sort", action="store_true", help="high priority first")
@@ -321,7 +324,7 @@ def cli(argv, path=None):
             return 0
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority,
-                       by_priority=args.sort)
+                       by_priority=args.sort, done_only=args.done)
             return 0
         if args.command == "find":
             found = find(tasks, " ".join(args.text))
