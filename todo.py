@@ -349,7 +349,10 @@ def cli(argv, path=None):
             return 0
         if args.command == "stats":
             s = summary(tasks)
-            print(f"{s['done']}/{s['total']} done, {s['pending']} pending")
+            pending = [t["priority"] for t in tasks if not t["done"]]
+            parts = [f"{pending.count(p)} {p}" for p in reversed(PRIORITIES) if p in pending]
+            detail = f" ({', '.join(parts)})" if parts else ""
+            print(f"{s['done']}/{s['total']} done, {s['pending']} pending{detail}")
             return 0
         if args.command == "add":
             task = create_task(tasks, " ".join(args.name), args.priority)

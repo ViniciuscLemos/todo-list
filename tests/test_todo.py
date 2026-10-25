@@ -246,7 +246,7 @@ class TestCli(unittest.TestCase):
         self.run_cli("add", "A")
         self.run_cli("add", "B")
         self.run_cli("done", "1")
-        self.assertEqual(self.run_cli("stats"), (0, "1/2 done, 1 pending\n"))
+        self.assertEqual(self.run_cli("stats"), (0, "1/2 done, 1 pending (1 medium)\n"))
 
     def test_find(self):
         self.run_cli("add", "Buy bread")
