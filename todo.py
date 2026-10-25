@@ -114,6 +114,14 @@ def edit(tasks, number, name=None, priority=None):
     return task
 
 
+def move(tasks, number, to):
+    """Puts the task at position `to`, the others slide to make room."""
+    task = get_task(tasks, number)
+    get_task(tasks, to)
+    tasks.insert(to - 1, tasks.pop(number - 1))
+    return task
+
+
 def remove(tasks, number):
     get_task(tasks, number)  # validates the number
     return tasks.pop(number - 1)
@@ -317,6 +325,10 @@ def cli(argv, path=None):
 
     commands.add_parser("stats", help="how many are done and pending")
 
+    reorder = commands.add_parser("move", help="change a task's position in the list")
+    reorder.add_argument("number", type=int)
+    reorder.add_argument("to", type=int, help="the new position")
+
     args = parser.parse_args(argv)
     tasks = load_tasks(path)
 
@@ -349,6 +361,8 @@ def cli(argv, path=None):
         elif args.command == "reopen":
             names = [reopen(tasks, n)["name"] for n in args.numbers]
             message = "\n".join(f"Pending again: {name}" for name in names)
+        elif args.command == "move":
+            message = f"Moved to {args.to}: {move(tasks, args.number, args.to)['name']}"
         elif args.command == "edit":
             if args.name is None and args.priority is None:
                 raise ValueError("Nothing to change, use --name or --priority.")

@@ -213,6 +213,13 @@ class TestCli(unittest.TestCase):
         self.run_cli("add", "A")
         self.assertEqual(self.run_cli("clear"), (0, "Nothing to clear, no task is done.\n"))
 
+    def test_move(self):
+        for name in ("A", "B", "C"):
+            self.run_cli("add", name)
+        self.assertEqual(self.run_cli("move", "3", "1"), (0, "Moved to 1: C\n"))
+        self.assertEqual([t["name"] for t in todo.load_tasks(self.path)], ["C", "A", "B"])
+        self.assertEqual(self.run_cli("move", "1", "9")[0], 1)
+
     def test_list_done(self):
         self.run_cli("add", "Finished")
         self.run_cli("add", "Not yet")
