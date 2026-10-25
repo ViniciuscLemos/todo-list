@@ -213,6 +213,12 @@ class TestCli(unittest.TestCase):
         self.run_cli("add", "A")
         self.assertEqual(self.run_cli("clear"), (0, "Nothing to clear, no task is done.\n"))
 
+    def test_list_markdown(self):
+        self.run_cli("add", "A")
+        self.run_cli("add", "B")
+        self.run_cli("done", "2")
+        self.assertEqual(self.run_cli("list", "--md"), (0, "- [ ] A\n- [x] B\n"))
+
     def test_move(self):
         for name in ("A", "B", "C"):
             self.run_cli("add", name)

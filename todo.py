@@ -298,6 +298,7 @@ def cli(argv, path=None):
                       help="only this priority")
     show.add_argument("-s", "--sort", action="store_true", help="high priority first")
     show.add_argument("--json", action="store_true", help="print the raw tasks, to use in scripts")
+    show.add_argument("--md", action="store_true", help="markdown checklist, to paste in an issue or notes")
 
     add = commands.add_parser("add", help="add a task")
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
@@ -333,6 +334,10 @@ def cli(argv, path=None):
     tasks = load_tasks(path)
 
     try:
+        if args.command == "list" and args.md:
+            for task in tasks:
+                print(f"- [{'x' if task['done'] else ' '}] {task['name']}")
+            return 0
         if args.command == "list" and args.json:
             print(json.dumps(tasks, ensure_ascii=False, indent=2))
             return 0
