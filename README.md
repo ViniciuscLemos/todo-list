@@ -20,6 +20,8 @@ There are also direct commands, for when you don't want to open the menu:
 
 ```bash
 python todo.py add Study SQL for the exam -p high
+python todo.py add Pay the rent -d 2026-11-05   # or -d today, tomorrow, +3
+python todo.py edit 2 -d none                   # removes the due date
 python todo.py list --pending
 python todo.py list --done
 python todo.py list -p high   # only one priority
@@ -29,7 +31,7 @@ python todo.py edit 1 -n "Study SQL and Python" -p m
 python todo.py find sql
 python todo.py stats
 python todo.py list --json   # raw tasks, for scripts
-python todo.py list --md     # markdown checklist, to paste somewhere
+python todo.py list --md     # markdown checklist, to paste somewhere (--pending works here too)
 python todo.py move 3 1      # task 3 goes to the top
 python todo.py rm 2
 python todo.py clear          # removes the done ones
@@ -43,6 +45,8 @@ When something goes wrong (a task number that doesn't exist, for example) the co
 ## What it looks like
 
 ![The task list in the terminal](docs/screenshot.png)
+
+Tasks with a due date show it next to the name, and once the day passes they show up as late (also counted in `stats`). Done tasks never count as late.
 
 The dot is the priority (red is high, yellow medium, green low). When picking the priority you can type `medium`, `Medium` or just the initial (`h`, `m`, `l`).
 
