@@ -53,6 +53,16 @@ class TestRules(unittest.TestCase):
         self.assertFalse(self.tasks[0]["done"])
         self.assertIsNone(self.tasks[0]["done_at"])
 
+    def test_parse_due(self):
+        today = todo.date.today()
+        self.assertEqual(todo.parse_due("2026-02-03"), "2026-02-03")
+        self.assertEqual(todo.parse_due(" Today "), today.isoformat())
+        self.assertEqual(todo.parse_due("+7"), (today + todo.timedelta(days=7)).isoformat())
+        self.assertEqual(todo.parse_due("none"), "")
+        for wrong in ("2026-02-30", "03/02/2026", "+x"):
+            with self.assertRaises(ValueError):
+                todo.parse_due(wrong)
+
     def test_invalid_number(self):
         todo.create_task(self.tasks, "A")
         for number in (0, 2, -1):
@@ -218,6 +228,14 @@ class TestCli(unittest.TestCase):
         self.run_cli("add", "B")
         self.run_cli("done", "2")
         self.assertEqual(self.run_cli("list", "--md"), (0, "- [ ] A\n- [x] B\n"))
+
+    def test_add_and_edit_due_date(self):
+        self.run_cli("add", "Pay rent", "-d", "2026-11-05")
+        self.assertEqual(todo.load_tasks(self.path)[0]["due"], "2026-11-05")
+        self.run_cli("edit", "1", "-d", "none")
+        self.assertIsNone(todo.load_tasks(self.path)[0]["due"])
+        with self.assertRaises(SystemExit):
+            self.run_cli("edit", "1", "-d", "next week")
 
     def test_md_and_json_follow_the_filters(self):
         self.run_cli("add", "A", "-p", "h")

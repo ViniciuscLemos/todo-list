@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 # saved next to the script; TODO_FILE is there to change the path in tests
 FILE = os.environ.get(
@@ -13,6 +13,7 @@ FILE = os.environ.get(
 PRIORITIES = ("low", "medium", "high")
 PRIORITY_ICONS = {"low": "🟢", "medium": "🟡", "high": "🔴"}
 DATE_FORMAT = "%Y-%m-%d %H:%M"
+DUE_FORMAT = "%Y-%m-%d"
 
 
 
@@ -22,6 +23,7 @@ def _normalize(task):
     task.setdefault("priority", "medium")
     task.setdefault("created_at", None)
     task.setdefault("done_at", None)
+    task.setdefault("due", None)
     return task
 
 
@@ -58,7 +60,33 @@ def _now():
     return datetime.now().strftime(DATE_FORMAT)
 
 
-def create_task(tasks, name, priority="medium"):
+def parse_due(text):
+    """YYYY-MM-DD, today, tomorrow or +N (days from now). "none" gives "", which edit uses to clear it."""
+    clean = text.strip().lower()
+    if clean in ("none", "-"):
+        return ""
+    today = date.today()
+    if clean == "today":
+        return today.strftime(DUE_FORMAT)
+    if clean == "tomorrow":
+        return (today + timedelta(days=1)).strftime(DUE_FORMAT)
+    try:
+        if clean.startswith("+"):
+            return (today + timedelta(days=int(clean[1:]))).strftime(DUE_FORMAT)
+        return datetime.strptime(clean, DUE_FORMAT).strftime(DUE_FORMAT)
+    except ValueError:
+        raise ValueError("Due date must be YYYY-MM-DD, today, tomorrow or +N days.") from None
+
+
+def due_arg(text):
+    # argparse only shows the message of an ArgumentTypeError
+    try:
+        return parse_due(text)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from None
+
+
+def create_task(tasks, name, priority="medium", due=None):
     name = name.strip()
     if not name:
         raise ValueError("Name can't be empty.")
@@ -70,6 +98,7 @@ def create_task(tasks, name, priority="medium"):
         "priority": priority,
         "created_at": _now(),
         "done_at": None,
+        "due": due or None,
     }
     tasks.append(task)
     return task
@@ -100,7 +129,8 @@ def reopen(tasks, number):
     return task
 
 
-def edit(tasks, number, name=None, priority=None):
+def edit(tasks, number, name=None, priority=None, due=None):
+    """None leaves the field as it is; due="" removes the due date."""
     task = get_task(tasks, number)
     if name is not None:
         name = name.strip()
@@ -111,6 +141,8 @@ def edit(tasks, number, name=None, priority=None):
         if priority not in PRIORITIES:
             raise ValueError("Priority must be: low, medium or high.")
         task["priority"] = priority
+    if due is not None:
+        task["due"] = due or None
     return task
 
 
@@ -309,6 +341,7 @@ def cli(argv, path=None):
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
     add.add_argument("-p", "--priority", default="medium", type=normalize_priority,
                      help="low, medium or high (or l/m/h)")
+    add.add_argument("-d", "--due", type=due_arg, help="YYYY-MM-DD, today, tomorrow or +N days")
 
     finish = commands.add_parser("done", help="mark as done (one or more numbers)")
     finish.add_argument("numbers", type=int, nargs="+")
@@ -325,6 +358,7 @@ def cli(argv, path=None):
     change.add_argument("number", type=int)
     change.add_argument("-n", "--name")
     change.add_argument("-p", "--priority", type=normalize_priority)
+    change.add_argument("-d", "--due", type=due_arg, help="new due date, or none to remove it")
 
     search = commands.add_parser("find", help="search tasks by name")
     search.add_argument("text", nargs="+")
@@ -366,7 +400,7 @@ def cli(argv, path=None):
             print(f"{s['done']}/{s['total']} done, {s['pending']} pending{detail}")
             return 0
         if args.command == "add":
-            task = create_task(tasks, " ".join(args.name), args.priority)
+            task = create_task(tasks, " ".join(args.name), args.priority, args.due)
             message = f"Added: {task['name']}"
         elif args.command == "done":
             # if one number is wrong nothing gets saved, so it's all or nothing
@@ -378,9 +412,10 @@ def cli(argv, path=None):
         elif args.command == "move":
             message = f"Moved to {args.to}: {move(tasks, args.number, args.to)['name']}"
         elif args.command == "edit":
-            if args.name is None and args.priority is None:
-                raise ValueError("Nothing to change, use --name or --priority.")
-            message = f"Updated: {edit(tasks, args.number, args.name, args.priority)['name']}"
+            if args.name is None and args.priority is None and args.due is None:
+                raise ValueError("Nothing to change, use --name, --priority or --due.")
+            task = edit(tasks, args.number, args.name, args.priority, args.due)
+            message = f"Updated: {task['name']}"
         elif args.command == "rm":
             for n in args.numbers:
                 get_task(tasks, n)
