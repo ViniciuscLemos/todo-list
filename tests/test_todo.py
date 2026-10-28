@@ -104,7 +104,7 @@ class TestRules(unittest.TestCase):
         todo.create_task(self.tasks, "A")
         todo.create_task(self.tasks, "B")
         todo.complete(self.tasks, 2)
-        self.assertEqual(todo.summary(self.tasks), {"total": 2, "done": 1, "pending": 1})
+        self.assertEqual(todo.summary(self.tasks), {"total": 2, "done": 1, "pending": 1, "late": 0})
 
 
 class TestStorage(unittest.TestCase):
@@ -236,6 +236,17 @@ class TestCli(unittest.TestCase):
         self.assertIsNone(todo.load_tasks(self.path)[0]["due"])
         with self.assertRaises(SystemExit):
             self.run_cli("edit", "1", "-d", "next week")
+
+    def test_late_tasks_in_list_and_stats(self):
+        self.run_cli("add", "Old bill", "-d", "2020-01-01")
+        self.run_cli("add", "Later", "-d", "+30")
+        self.run_cli("add", "Paid", "-d", "2020-01-01")
+        self.run_cli("done", "3")
+        code, text = self.run_cli("list")
+        self.assertIn("Old bill  (late, was due 2020-01-01)", text)
+        self.assertIn("Later  (due ", text)
+        self.assertEqual(text.count("late"), 2)  # the done one isn't late
+        self.assertEqual(self.run_cli("stats")[1], "1/3 done, 2 pending (2 medium), 1 late\n")
 
     def test_md_and_json_follow_the_filters(self):
         self.run_cli("add", "A", "-p", "h")

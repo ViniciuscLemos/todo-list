@@ -174,9 +174,16 @@ def find(tasks, text):
     return [(i, t) for i, t in enumerate(tasks, 1) if text in t["name"].lower()]
 
 
+def is_late(task, today=None):
+    today = today or date.today().strftime(DUE_FORMAT)
+    # same format on both sides, so comparing the strings works
+    return not task["done"] and bool(task["due"]) and task["due"] < today
+
+
 def summary(tasks):
     done = sum(1 for t in tasks if t["done"])
-    return {"total": len(tasks), "done": done, "pending": len(tasks) - done}
+    late = sum(1 for t in tasks if is_late(t))
+    return {"total": len(tasks), "done": done, "pending": len(tasks) - done, "late": late}
 
 
 
@@ -204,12 +211,16 @@ def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done
     for i, task in visible:
         status = "✅" if task["done"] else "⬜"
         icon = PRIORITY_ICONS.get(task["priority"], "")
-        print(f"  {i}. {status} {icon} {task['name']}")
+        due = ""
+        if task["due"] and not task["done"]:
+            due = f"  (late, was due {task['due']})" if is_late(task) else f"  (due {task['due']})"
+        print(f"  {i}. {status} {icon} {task['name']}{due}")
         if task["done_at"]:
             print(f"        done on {task['done_at']}")
     s = summary(tasks)
+    late = f" · {s['late']} late" if s["late"] else ""
     print("  " + "-" * 45)
-    print(f"  {s['done']}/{s['total']} done · {s['pending']} pending\n")
+    print(f"  {s['done']}/{s['total']} done · {s['pending']} pending{late}\n")
 
 
 def read_number(message):
@@ -230,6 +241,11 @@ def read_priority(current=None):
     default = current or "medium"
     text = input(f"  Priority (low/medium/high) [{default}]: ")
     return normalize_priority(text) or default
+
+
+def read_due():
+    text = input("  Due date (YYYY-MM-DD, today, +3) [none]: ").strip()
+    return parse_due(text) if text else None
 
 
 def run(action, *args, **kwargs):
@@ -267,7 +283,8 @@ def run_option(option, tasks):
         list_tasks(tasks, pending_only=True)
     elif option == "3":
         name = input("  Task name: ")
-        task = run(create_task, tasks, name, read_priority())
+        priority = read_priority()
+        task = run(create_task, tasks, name, priority, run(read_due))
         if task:
             save_tasks(tasks)
             print(f"  ✅ Task '{task['name']}' added!\n")
@@ -397,7 +414,8 @@ def cli(argv, path=None):
             pending = [t["priority"] for t in tasks if not t["done"]]
             parts = [f"{pending.count(p)} {p}" for p in reversed(PRIORITIES) if p in pending]
             detail = f" ({', '.join(parts)})" if parts else ""
-            print(f"{s['done']}/{s['total']} done, {s['pending']} pending{detail}")
+            late = f", {s['late']} late" if s["late"] else ""
+            print(f"{s['done']}/{s['total']} done, {s['pending']} pending{detail}{late}")
             return 0
         if args.command == "add":
             task = create_task(tasks, " ".join(args.name), args.priority, args.due)
