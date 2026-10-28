@@ -148,11 +148,16 @@ def summary(tasks):
 
 
 
+def filtered(tasks, pending_only=False, done_only=False, priority=None):
+    """Returns (number, task) for the tasks that pass the filters, numbers starting at 1."""
+    return [(i, t) for i, t in enumerate(tasks, 1)
+            if not (pending_only and t["done"])
+            and not (done_only and not t["done"])
+            and (priority is None or t["priority"] == priority)]
+
+
 def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done_only=False):
-    visible = [(i, t) for i, t in enumerate(tasks, 1)
-               if not (pending_only and t["done"])
-               and not (done_only and not t["done"])
-               and (priority is None or t["priority"] == priority)]
+    visible = filtered(tasks, pending_only, done_only, priority)
     if by_priority:
         # high first; the numbers stay the same so done/rm still work with them
         visible.sort(key=lambda item: -PRIORITIES.index(item[1]["priority"]))
@@ -334,12 +339,13 @@ def cli(argv, path=None):
     tasks = load_tasks(path)
 
     try:
-        if args.command == "list" and args.md:
-            for task in tasks:
-                print(f"- [{'x' if task['done'] else ' '}] {task['name']}")
-            return 0
-        if args.command == "list" and args.json:
-            print(json.dumps(tasks, ensure_ascii=False, indent=2))
+        if args.command == "list" and (args.md or args.json):
+            chosen = [t for _, t in filtered(tasks, args.pending, args.done, args.priority)]
+            if args.json:
+                print(json.dumps(chosen, ensure_ascii=False, indent=2))
+            else:
+                for task in chosen:
+                    print(f"- [{'x' if task['done'] else ' '}] {task['name']}")
             return 0
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority,

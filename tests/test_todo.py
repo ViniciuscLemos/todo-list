@@ -219,6 +219,15 @@ class TestCli(unittest.TestCase):
         self.run_cli("done", "2")
         self.assertEqual(self.run_cli("list", "--md"), (0, "- [ ] A\n- [x] B\n"))
 
+    def test_md_and_json_follow_the_filters(self):
+        self.run_cli("add", "A", "-p", "h")
+        self.run_cli("add", "B")
+        self.run_cli("done", "2")
+        self.assertEqual(self.run_cli("list", "--md", "--pending"), (0, "- [ ] A\n"))
+        self.assertEqual(self.run_cli("list", "--md", "--done"), (0, "- [x] B\n"))
+        code, text = self.run_cli("list", "--json", "-p", "high")
+        self.assertEqual([t["name"] for t in json.loads(text)], ["A"])
+
     def test_move(self):
         for name in ("A", "B", "C"):
             self.run_cli("add", name)
