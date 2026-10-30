@@ -248,6 +248,17 @@ class TestCli(unittest.TestCase):
         self.assertEqual(text.count("late"), 2)  # the done one isn't late
         self.assertEqual(self.run_cli("stats")[1], "1/3 done, 2 pending (2 medium), 1 late\n")
 
+    def test_list_late(self):
+        self.run_cli("add", "Old bill", "-d", "2020-01-01")
+        self.run_cli("add", "Later", "-d", "+30")
+        self.run_cli("add", "No date")
+        code, text = self.run_cli("list", "--late")
+        self.assertIn("Late tasks", text)
+        self.assertIn("Old bill", text)
+        self.assertNotIn("Later", text)
+        self.assertNotIn("No date", text)
+        self.assertEqual(self.run_cli("list", "--late", "--md"), (0, "- [ ] Old bill\n"))
+
     def test_md_and_json_follow_the_filters(self):
         self.run_cli("add", "A", "-p", "h")
         self.run_cli("add", "B")

@@ -187,16 +187,18 @@ def summary(tasks):
 
 
 
-def filtered(tasks, pending_only=False, done_only=False, priority=None):
+def filtered(tasks, pending_only=False, done_only=False, priority=None, late_only=False):
     """Returns (number, task) for the tasks that pass the filters, numbers starting at 1."""
     return [(i, t) for i, t in enumerate(tasks, 1)
             if not (pending_only and t["done"])
             and not (done_only and not t["done"])
+            and not (late_only and not is_late(t))
             and (priority is None or t["priority"] == priority)]
 
 
-def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done_only=False):
-    visible = filtered(tasks, pending_only, done_only, priority)
+def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done_only=False,
+               late_only=False):
+    visible = filtered(tasks, pending_only, done_only, priority, late_only)
     if by_priority:
         # high first; the numbers stay the same so done/rm still work with them
         visible.sort(key=lambda item: -PRIORITIES.index(item[1]["priority"]))
@@ -205,6 +207,7 @@ def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done
         return
     title = ("📋 Pending tasks:" if pending_only
              else "📋 Done tasks:" if done_only
+             else "📋 Late tasks:" if late_only
              else "📋 Your tasks:")
     print(f"\n  {title}")
     print("  " + "-" * 45)
@@ -348,6 +351,7 @@ def cli(argv, path=None):
     which = show.add_mutually_exclusive_group()
     which.add_argument("--pending", action="store_true", help="only the ones not done")
     which.add_argument("--done", action="store_true", help="only the ones already done")
+    which.add_argument("--late", action="store_true", help="only the ones past their due date")
     show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
                       help="only this priority")
     show.add_argument("-s", "--sort", action="store_true", help="high priority first")
@@ -391,7 +395,7 @@ def cli(argv, path=None):
 
     try:
         if args.command == "list" and (args.md or args.json):
-            chosen = [t for _, t in filtered(tasks, args.pending, args.done, args.priority)]
+            chosen = [t for _, t in filtered(tasks, args.pending, args.done, args.priority, args.late)]
             if args.json:
                 print(json.dumps(chosen, ensure_ascii=False, indent=2))
             else:
@@ -400,7 +404,7 @@ def cli(argv, path=None):
             return 0
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority,
-                       by_priority=args.sort, done_only=args.done)
+                       by_priority=args.sort, done_only=args.done, late_only=args.late)
             return 0
         if args.command == "find":
             found = find(tasks, " ".join(args.text))
