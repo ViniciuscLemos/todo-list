@@ -197,11 +197,14 @@ def filtered(tasks, pending_only=False, done_only=False, priority=None, late_onl
 
 
 def list_tasks(tasks, pending_only=False, priority=None, by_priority=False, done_only=False,
-               late_only=False):
+               late_only=False, by_due=False):
     visible = filtered(tasks, pending_only, done_only, priority, late_only)
     if by_priority:
         # high first; the numbers stay the same so done/rm still work with them
         visible.sort(key=lambda item: -PRIORITIES.index(item[1]["priority"]))
+    if by_due:
+        # closest date first, the ones without a date at the end
+        visible.sort(key=lambda item: (item[1]["due"] is None, item[1]["due"] or ""))
     if not visible:
         print("\n  No tasks to show.\n")
         return
@@ -355,6 +358,7 @@ def cli(argv, path=None):
     show.add_argument("-p", "--priority", type=normalize_priority, choices=PRIORITIES,
                       help="only this priority")
     show.add_argument("-s", "--sort", action="store_true", help="high priority first")
+    show.add_argument("--by-due", action="store_true", help="closest due date first")
     show.add_argument("--json", action="store_true", help="print the raw tasks, to use in scripts")
     show.add_argument("--md", action="store_true", help="markdown checklist, to paste in an issue or notes")
 
@@ -404,7 +408,8 @@ def cli(argv, path=None):
             return 0
         if args.command == "list":
             list_tasks(tasks, pending_only=args.pending, priority=args.priority,
-                       by_priority=args.sort, done_only=args.done, late_only=args.late)
+                       by_priority=args.sort, done_only=args.done, late_only=args.late,
+                       by_due=args.by_due)
             return 0
         if args.command == "find":
             found = find(tasks, " ".join(args.text))

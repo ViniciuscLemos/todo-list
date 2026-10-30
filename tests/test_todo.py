@@ -259,6 +259,15 @@ class TestCli(unittest.TestCase):
         self.assertNotIn("No date", text)
         self.assertEqual(self.run_cli("list", "--late", "--md"), (0, "- [ ] Old bill\n"))
 
+    def test_list_by_due_date(self):
+        self.run_cli("add", "No date")
+        self.run_cli("add", "Later", "-d", "2030-05-01")
+        self.run_cli("add", "Sooner", "-d", "2030-01-10")
+        code, text = self.run_cli("list", "--by-due")
+        self.assertLess(text.index("Sooner"), text.index("Later"))
+        self.assertLess(text.index("Later"), text.index("No date"))
+        self.assertIn("3. ", text)  # the numbers stay the ones from the list
+
     def test_md_and_json_follow_the_filters(self):
         self.run_cli("add", "A", "-p", "h")
         self.run_cli("add", "B")
