@@ -59,9 +59,19 @@ class TestRules(unittest.TestCase):
         self.assertEqual(todo.parse_due(" Today "), today.isoformat())
         self.assertEqual(todo.parse_due("+7"), (today + todo.timedelta(days=7)).isoformat())
         self.assertEqual(todo.parse_due("none"), "")
-        for wrong in ("2026-02-30", "03/02/2026", "+x"):
+        for wrong in ("2026-02-30", "03/02/2026", "+x", "fr"):
             with self.assertRaises(ValueError):
                 todo.parse_due(wrong)
+
+    def test_due_on_a_weekday(self):
+        today = todo.date.today()
+        for text in ("fri", "Friday"):
+            due = todo.date.fromisoformat(todo.parse_due(text))
+            self.assertEqual(due.weekday(), 4)
+            # always ahead, within the next 7 days, never today
+            self.assertTrue(1 <= (due - today).days <= 7)
+        same_day = todo.WEEKDAYS[today.weekday()]
+        self.assertEqual(todo.parse_due(same_day), (today + todo.timedelta(days=7)).isoformat())
 
     def test_invalid_number(self):
         todo.create_task(self.tasks, "A")

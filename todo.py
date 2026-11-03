@@ -60,8 +60,12 @@ def _now():
     return datetime.now().strftime(DATE_FORMAT)
 
 
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+
 def parse_due(text):
-    """YYYY-MM-DD, today, tomorrow or +N (days from now). "none" gives "", which edit uses to clear it."""
+    """YYYY-MM-DD, today, tomorrow, a weekday (fri, friday) or +N (days from now).
+    "none" gives "", which edit uses to clear it."""
     clean = text.strip().lower()
     if clean in ("none", "-"):
         return ""
@@ -70,12 +74,18 @@ def parse_due(text):
         return today.strftime(DUE_FORMAT)
     if clean == "tomorrow":
         return (today + timedelta(days=1)).strftime(DUE_FORMAT)
+    # "fri" or "friday" is the next one; saying it on a friday means a week from today,
+    # since "today" already exists for today
+    day = next((i for i, name in enumerate(WEEKDAYS) if len(clean) >= 3 and name.startswith(clean)), None)
+    if day is not None:
+        ahead = (day - today.weekday()) % 7 or 7
+        return (today + timedelta(days=ahead)).strftime(DUE_FORMAT)
     try:
         if clean.startswith("+"):
             return (today + timedelta(days=int(clean[1:]))).strftime(DUE_FORMAT)
         return datetime.strptime(clean, DUE_FORMAT).strftime(DUE_FORMAT)
     except ValueError:
-        raise ValueError("Due date must be YYYY-MM-DD, today, tomorrow or +N days.") from None
+        raise ValueError("Due date must be YYYY-MM-DD, today, tomorrow, a weekday or +N days.") from None
 
 
 def due_arg(text):
@@ -366,7 +376,7 @@ def cli(argv, path=None):
     add.add_argument("name", nargs="+", help="task name (quotes are optional)")
     add.add_argument("-p", "--priority", default="medium", type=normalize_priority,
                      help="low, medium or high (or l/m/h)")
-    add.add_argument("-d", "--due", type=due_arg, help="YYYY-MM-DD, today, tomorrow or +N days")
+    add.add_argument("-d", "--due", type=due_arg, help="YYYY-MM-DD, today, tomorrow, a weekday or +N days")
 
     finish = commands.add_parser("done", help="mark as done (one or more numbers)")
     finish.add_argument("numbers", type=int, nargs="+")

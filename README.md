@@ -20,7 +20,7 @@ There are also direct commands, for when you don't want to open the menu:
 
 ```bash
 python todo.py add Study SQL for the exam -p high
-python todo.py add Pay the rent -d 2026-11-05   # or -d today, tomorrow, +3
+python todo.py add Pay the rent -d 2026-11-05   # or -d today, tomorrow, friday, +3
 python todo.py edit 2 -d none                   # removes the due date
 python todo.py list --pending
 python todo.py list --done
