@@ -28,6 +28,7 @@ python todo.py list -p high   # only one priority
 python todo.py list --sort    # high first, numbers don't change
 python todo.py list --by-due  # closest due date first
 python todo.py list --late    # only what's past its due date
+python todo.py today          # what's late and what's due today, to run in the morning
 python todo.py done 1 3       # done, reopen and rm take more than one number
 python todo.py edit 1 -n "Study SQL and Python" -p m
 python todo.py find sql

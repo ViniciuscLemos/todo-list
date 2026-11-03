@@ -269,6 +269,16 @@ class TestCli(unittest.TestCase):
         self.assertNotIn("No date", text)
         self.assertEqual(self.run_cli("list", "--late", "--md"), (0, "- [ ] Old bill\n"))
 
+    def test_today(self):
+        self.assertEqual(self.run_cli("today"), (0, "Nothing late and nothing due today.\n"))
+        self.run_cli("add", "Old bill", "-d", "2020-01-01")
+        self.run_cli("add", "Gym", "-d", "today")
+        self.run_cli("add", "Later", "-d", "+3")
+        self.run_cli("add", "Done today", "-d", "today")
+        self.run_cli("done", "4")
+        code, text = self.run_cli("today")
+        self.assertEqual(text, "Late:\n  1. Old bill (was due 2020-01-01)\nDue today:\n  2. Gym\n")
+
     def test_list_by_due_date(self):
         self.run_cli("add", "No date")
         self.run_cli("add", "Later", "-d", "2030-05-01")

@@ -190,6 +190,14 @@ def is_late(task, today=None):
     return not task["done"] and bool(task["due"]) and task["due"] < today
 
 
+def due_soon(tasks, today=None):
+    """(late, due today) as (number, task) lists: what needs attention right now."""
+    today = today or date.today().strftime(DUE_FORMAT)
+    late = [(i, t) for i, t in enumerate(tasks, 1) if is_late(t, today)]
+    now = [(i, t) for i, t in enumerate(tasks, 1) if not t["done"] and t["due"] == today]
+    return late, now
+
+
 def summary(tasks):
     done = sum(1 for t in tasks if t["done"])
     late = sum(1 for t in tasks if is_late(t))
@@ -399,6 +407,7 @@ def cli(argv, path=None):
     search.add_argument("text", nargs="+")
 
     commands.add_parser("stats", help="how many are done and pending")
+    commands.add_parser("today", help="what's late and what's due today")
 
     reorder = commands.add_parser("move", help="change a task's position in the list")
     reorder.add_argument("number", type=int)
@@ -427,6 +436,17 @@ def cli(argv, path=None):
                 print(f"{i}. {'[x]' if task['done'] else '[ ]'} {task['name']}")
             if not found:
                 print("Nothing found.")
+            return 0
+        if args.command == "today":
+            late, now = due_soon(tasks)
+            if not late and not now:
+                print("Nothing late and nothing due today.")
+            for title, group in (("Late", late), ("Due today", now)):
+                if group:
+                    print(f"{title}:")
+                    for i, task in group:
+                        when = f" (was due {task['due']})" if title == "Late" else ""
+                        print(f"  {i}. {task['name']}{when}")
             return 0
         if args.command == "stats":
             s = summary(tasks)
