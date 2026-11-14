@@ -198,6 +198,18 @@ def due_soon(tasks, today=None):
     return late, now
 
 
+def show_due_soon(tasks, indent=""):
+    late, now = due_soon(tasks)
+    if not late and not now:
+        print(f"{indent}Nothing late and nothing due today.")
+    for title, group in (("Late", late), ("Due today", now)):
+        if group:
+            print(f"{indent}{title}:")
+            for i, task in group:
+                when = f" (was due {task['due']})" if title == "Late" else ""
+                print(f"{indent}  {i}. {task['name']}{when}")
+
+
 def summary(tasks):
     done = sum(1 for t in tasks if t["done"])
     late = sum(1 for t in tasks if is_late(t))
@@ -302,6 +314,7 @@ def menu():
     print("  7. Remove task")
     print("  8. Clear done tasks")
     print("  9. Search tasks")
+    print("  10. Late and due today")
     print("  0. Quit")
     print("  ================================")
     return input("  Choose an option: ").strip()
@@ -360,6 +373,10 @@ def run_option(option, tasks):
         for i, task in found:
             print(f"  {i}. {'✅' if task['done'] else '⬜'} {task['name']}")
         print(f"  {len(found)} task(s) found.\n")
+    elif option == "10":
+        print()
+        show_due_soon(tasks, "  ")
+        print()
     elif option == "0":
         print("\n  See you! 👋\n")
         return False
@@ -447,15 +464,7 @@ def cli(argv, path=None):
                 print("Nothing found.")
             return 0
         if args.command == "today":
-            late, now = due_soon(tasks)
-            if not late and not now:
-                print("Nothing late and nothing due today.")
-            for title, group in (("Late", late), ("Due today", now)):
-                if group:
-                    print(f"{title}:")
-                    for i, task in group:
-                        when = f" (was due {task['due']})" if title == "Late" else ""
-                        print(f"  {i}. {task['name']}{when}")
+            show_due_soon(tasks)
             return 0
         if args.command == "stats":
             s = summary(tasks)

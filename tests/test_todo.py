@@ -196,6 +196,13 @@ class TestMenu(unittest.TestCase):
         self.assertIn("Due date must be", output)
         self.assertEqual(self.tasks[-1]["due"], "2030-03-01")
 
+    def test_late_and_due_today_from_the_menu(self):
+        todo.create_task(self.tasks, "Old bill", due="2001-01-01")
+        output = self.answer("10")
+        self.assertIn("Late:", output)
+        self.assertIn("2. Old bill (was due 2001-01-01)", output)
+        self.assertNotIn("Pay rent", output)
+
 
 class TestCli(unittest.TestCase):
     def setUp(self):
