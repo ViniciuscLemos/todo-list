@@ -203,6 +203,13 @@ class TestMenu(unittest.TestCase):
         self.assertIn("2. Old bill (was due 2001-01-01)", output)
         self.assertNotIn("Pay rent", output)
 
+    def test_move_from_the_menu(self):
+        todo.create_task(self.tasks, "Gym")
+        todo.create_task(self.tasks, "Groceries")
+        self.answer("11", "3", "1")
+        self.assertEqual([t["name"] for t in self.tasks], ["Groceries", "Pay rent", "Gym"])
+        self.assertIn("Invalid number", self.answer("11", "3", "9"))
+
 
 class TestCli(unittest.TestCase):
     def setUp(self):

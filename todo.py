@@ -315,6 +315,7 @@ def menu():
     print("  8. Clear done tasks")
     print("  9. Search tasks")
     print("  10. Late and due today")
+    print("  11. Move a task up or down")
     print("  0. Quit")
     print("  ================================")
     return input("  Choose an option: ").strip()
@@ -377,6 +378,13 @@ def run_option(option, tasks):
         print()
         show_due_soon(tasks, "  ")
         print()
+    elif option == "11":
+        list_tasks(tasks)
+        number = read_number("  Number of the task to move: ")
+        task = run(move, tasks, number, read_number("  New position: "))
+        if task:
+            save_tasks(tasks)
+            print(f"  ↕️  '{task['name']}' moved.\n")
     elif option == "0":
         print("\n  See you! 👋\n")
         return False
