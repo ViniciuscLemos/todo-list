@@ -191,6 +191,11 @@ class TestMenu(unittest.TestCase):
         self.answer("6", "1", "", "", "none")
         self.assertIsNone(self.tasks[0]["due"])
 
+    def test_a_due_date_it_cant_read_is_asked_again(self):
+        output = self.answer("3", "Call the bank", "", "next year", "2030-03-01")
+        self.assertIn("Due date must be", output)
+        self.assertEqual(self.tasks[-1]["due"], "2030-03-01")
+
 
 class TestCli(unittest.TestCase):
     def setUp(self):

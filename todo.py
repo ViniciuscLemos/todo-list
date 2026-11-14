@@ -268,9 +268,16 @@ def read_priority(current=None):
 
 
 def read_due(current=None):
-    """Blank answer gives None: no date when adding, keep the old one when editing."""
-    text = input(f"  Due date (YYYY-MM-DD, today, fri, +3, none) [{current or 'none'}]: ").strip()
-    return parse_due(text) if text else None
+    """Blank answer gives None: no date when adding, keep the old one when editing.
+    A date it can't read asks again, so a typo doesn't save the task without one."""
+    while True:
+        text = input(f"  Due date (YYYY-MM-DD, today, fri, +3, none) [{current or 'none'}]: ").strip()
+        if not text:
+            return None
+        try:
+            return parse_due(text)
+        except ValueError as error:
+            print(f"  ⚠️  {error}")
 
 
 def run(action, *args, **kwargs):
@@ -309,7 +316,7 @@ def run_option(option, tasks):
     elif option == "3":
         name = input("  Task name: ")
         priority = read_priority()
-        task = run(create_task, tasks, name, priority, run(read_due))
+        task = run(create_task, tasks, name, priority, read_due())
         if task:
             save_tasks(tasks)
             print(f"  ✅ Task '{task['name']}' added!\n")
@@ -332,7 +339,7 @@ def run_option(option, tasks):
         if current:
             new_name = input(f"  New name [{current['name']}]: ").strip() or None
             priority = read_priority(current["priority"])
-            task = run(edit, tasks, number, new_name, priority, run(read_due, current["due"]))
+            task = run(edit, tasks, number, new_name, priority, read_due(current["due"]))
             if task:
                 save_tasks(tasks)
                 print("  ✏️  Task updated!\n")
