@@ -155,6 +155,42 @@ class TestStorage(unittest.TestCase):
             self.assertTrue(os.path.exists(self.path + ".corrupted"))
 
 
+class TestMenu(unittest.TestCase):
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.old_file = todo.FILE
+        todo.FILE = os.path.join(self.folder.name, "tasks.json")
+        self.tasks = []
+        todo.create_task(self.tasks, "Pay rent", due="2030-01-10")
+
+    def tearDown(self):
+        todo.FILE = self.old_file
+        self.folder.cleanup()
+
+    def answer(self, option, *answers):
+        replies = iter(answers)
+        original = todo.input if hasattr(todo, "input") else None
+        todo.input = lambda _prompt="": next(replies)
+        try:
+            with contextlib.redirect_stdout(io.StringIO()) as output:
+                todo.run_option(option, self.tasks)
+        finally:
+            if original is None:
+                del todo.input
+            else:
+                todo.input = original
+        return output.getvalue()
+
+    def test_edit_keeps_the_due_date_when_left_blank(self):
+        self.answer("6", "1", "", "", "")
+        self.assertEqual(self.tasks[0]["due"], "2030-01-10")
+
+    def test_edit_changes_or_clears_the_due_date(self):
+        self.answer("6", "1", "", "", "2030-02-01")
+        self.assertEqual(self.tasks[0]["due"], "2030-02-01")
+        self.answer("6", "1", "", "", "none")
+        self.assertIsNone(self.tasks[0]["due"])
+
 
 class TestCli(unittest.TestCase):
     def setUp(self):

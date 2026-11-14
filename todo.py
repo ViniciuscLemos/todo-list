@@ -267,8 +267,9 @@ def read_priority(current=None):
     return normalize_priority(text) or default
 
 
-def read_due():
-    text = input("  Due date (YYYY-MM-DD, today, +3) [none]: ").strip()
+def read_due(current=None):
+    """Blank answer gives None: no date when adding, keep the old one when editing."""
+    text = input(f"  Due date (YYYY-MM-DD, today, fri, +3, none) [{current or 'none'}]: ").strip()
     return parse_due(text) if text else None
 
 
@@ -330,7 +331,8 @@ def run_option(option, tasks):
         current = run(get_task, tasks, number)
         if current:
             new_name = input(f"  New name [{current['name']}]: ").strip() or None
-            task = run(edit, tasks, number, new_name, read_priority(current["priority"]))
+            priority = read_priority(current["priority"])
+            task = run(edit, tasks, number, new_name, priority, run(read_due, current["due"]))
             if task:
                 save_tasks(tasks)
                 print("  ✏️  Task updated!\n")
