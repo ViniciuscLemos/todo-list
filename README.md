@@ -4,7 +4,7 @@
 
 A to-do list for the terminal, written in Python. It was one of my first projects.
 
-You can add tasks with a priority (low, medium or high), mark them as done, reopen, edit, remove and clear the ones that are already done. Everything is saved to a `tasks.json` in the same folder as the script.
+You can add tasks with a priority (low, medium or high) and a due date, mark them as done, reopen, edit, reorder, remove and clear the ones that are already done. Everything is saved to a `tasks.json` in the same folder as the script.
 
 ## How to use
 
@@ -15,6 +15,8 @@ python todo.py
 ```
 
 You don't need to install anything besides Python 3.
+
+In the menu, option 10 shows what's late and what's due today. When asking for a due date it takes the same answers as `-d` (`friday`, `+3`...), keeps the current one if you just press Enter and asks again if it can't read what you typed.
 
 There are also direct commands, for when you don't want to open the menu:
 

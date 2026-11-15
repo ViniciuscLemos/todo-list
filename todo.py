@@ -431,7 +431,7 @@ def cli(argv, path=None):
 
     commands.add_parser("clear", help="remove the done tasks")
 
-    change = commands.add_parser("edit", help="rename a task or change its priority")
+    change = commands.add_parser("edit", help="rename a task or change its priority or due date")
     change.add_argument("number", type=int)
     change.add_argument("-n", "--name")
     change.add_argument("-p", "--priority", type=normalize_priority)
