@@ -271,6 +271,18 @@ class TestCli(unittest.TestCase):
         code, text = self.run_cli("list", "--sort")
         self.assertLess(text.index("2. "), text.index("1. "))
 
+    def test_done_by_a_piece_of_the_name(self):
+        self.run_cli("add", "Buy bread")
+        self.run_cli("add", "Pay rent")
+        self.run_cli("add", "Pay the gym")
+        self.assertEqual(self.run_cli("done", "BREAD"), (0, "Done: Buy bread\n"))
+        code, output = self.run_cli("done", "pay")
+        self.assertEqual(code, 1)
+        self.assertIn("more than one task (2, 3)", output)
+        self.assertEqual(self.run_cli("done", "gym")[0], 0)
+        self.assertEqual(self.run_cli("reopen", "gym"), (0, "Pending again: Pay the gym\n"))
+        self.assertIn("No task has 'milk'", self.run_cli("done", "milk")[1])
+
     def test_done_several(self):
         for name in ("A", "B", "C"):
             self.run_cli("add", name)

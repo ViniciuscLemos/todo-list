@@ -184,6 +184,19 @@ def find(tasks, text):
     return [(i, t) for i, t in enumerate(tasks, 1) if text in t["name"].lower()]
 
 
+def pick(tasks, text):
+    """The number shown by list, or a piece of the name when only one task has it."""
+    if text.strip().isdigit():
+        return int(text)
+    found = find(tasks, text)
+    if not found:
+        raise ValueError(f"No task has '{text.strip()}' in the name.")
+    if len(found) > 1:
+        numbers = ", ".join(str(i) for i, _ in found)
+        raise ValueError(f"'{text.strip()}' is in more than one task ({numbers}), use the number.")
+    return found[0][0]
+
+
 def is_late(task, today=None):
     today = today or date.today().strftime(DUE_FORMAT)
     # same format on both sides, so comparing the strings works
@@ -420,11 +433,11 @@ def cli(argv, path=None):
                      help="low, medium or high (or l/m/h)")
     add.add_argument("-d", "--due", type=due_arg, help="YYYY-MM-DD, today, tomorrow, a weekday or +N days")
 
-    finish = commands.add_parser("done", help="mark as done (one or more numbers)")
-    finish.add_argument("numbers", type=int, nargs="+")
+    finish = commands.add_parser("done", help="mark as done (numbers, or a piece of the name)")
+    finish.add_argument("numbers", nargs="+")
 
-    back = commands.add_parser("reopen", help="mark as pending again (one or more numbers)")
-    back.add_argument("numbers", type=int, nargs="+")
+    back = commands.add_parser("reopen", help="mark as pending again (numbers, or a piece of the name)")
+    back.add_argument("numbers", nargs="+")
 
     delete = commands.add_parser("rm", help="remove (one or more numbers)")
     delete.add_argument("numbers", type=int, nargs="+", help="the task numbers shown by list")
@@ -487,10 +500,10 @@ def cli(argv, path=None):
             message = f"Added: {task['name']}"
         elif args.command == "done":
             # if one number is wrong nothing gets saved, so it's all or nothing
-            names = [complete(tasks, n)["name"] for n in args.numbers]
+            names = [complete(tasks, pick(tasks, n))["name"] for n in args.numbers]
             message = "\n".join(f"Done: {name}" for name in names)
         elif args.command == "reopen":
-            names = [reopen(tasks, n)["name"] for n in args.numbers]
+            names = [reopen(tasks, pick(tasks, n))["name"] for n in args.numbers]
             message = "\n".join(f"Pending again: {name}" for name in names)
         elif args.command == "move":
             message = f"Moved to {args.to}: {move(tasks, args.number, args.to)['name']}"
