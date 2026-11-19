@@ -283,6 +283,13 @@ class TestCli(unittest.TestCase):
         self.assertEqual(self.run_cli("reopen", "gym"), (0, "Pending again: Pay the gym\n"))
         self.assertIn("No task has 'milk'", self.run_cli("done", "milk")[1])
 
+    def test_add_says_when_the_task_is_already_pending(self):
+        self.run_cli("add", "Buy bread")
+        self.assertEqual(self.run_cli("add", "buy", "BREAD"),
+                         (0, "Added: buy BREAD\n(it was already on the list as 1, still pending)\n"))
+        self.run_cli("done", "1", "2")
+        self.assertEqual(self.run_cli("add", "Buy bread"), (0, "Added: Buy bread\n"))
+
     def test_done_several(self):
         for name in ("A", "B", "C"):
             self.run_cli("add", name)

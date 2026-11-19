@@ -496,8 +496,15 @@ def cli(argv, path=None):
             print(f"{s['done']}/{s['total']} done, {s['pending']} pending{detail}{late}")
             return 0
         if args.command == "add":
-            task = create_task(tasks, " ".join(args.name), args.priority, args.due)
+            name = " ".join(args.name).strip()
+            # it still adds (two "Call mom" can be on purpose), but says so, since it's
+            # usually the same task typed again
+            twin = next((i for i, t in enumerate(tasks, 1)
+                         if not t["done"] and t["name"].casefold() == name.casefold()), None)
+            task = create_task(tasks, name, args.priority, args.due)
             message = f"Added: {task['name']}"
+            if twin:
+                message += f"\n(it was already on the list as {twin}, still pending)"
         elif args.command == "done":
             # if one number is wrong nothing gets saved, so it's all or nothing
             names = [complete(tasks, pick(tasks, n))["name"] for n in args.numbers]
